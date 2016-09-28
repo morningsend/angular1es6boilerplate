@@ -1,6 +1,8 @@
 var path = require("path");
 var webpack = require("webpack");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var CopyWebpackPlugin = require("copy-webpack-plugin");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 
@@ -8,7 +10,7 @@ module.exports = {
     context: path.resolve(ROOT_DIR, "src/"),
     entry: {
         app: "./index.js",
-        vendor: ["babel-polyfill","angular", "rxjs", "angular-material"]
+        vendor: ["babel-polyfill","angular", "angular-route","rxjs", "angular-material", "angular-aria", "angular-animate", "angular-messages"]
     },
     output: {
         path:  "./dist",
@@ -27,16 +29,35 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                loader: "style!css"
+                loader: ExtractTextPlugin.extract("style", ["css"])
             },
             {
                 test: /\.scss$/,
-                loader: "style!css!scss"
+                loader: ExtractTextPlugin.extract("style", ["css!sass"])
             }
         ]
     },
     plugins: [
-        new HtmlWebpackPlugin(),
-        new webpack.optimize.CommonsChunkPlugin("vendor", "vendor.bundle.js")
-        ]
+        new HtmlWebpackPlugin({
+            title: "Todo Angular 1",
+            template: ROOT_DIR + "/src/index.ejs"
+        }),
+
+        new webpack.optimize.CommonsChunkPlugin("vendor", "vendor.bundle.js"),
+
+        new ExtractTextPlugin("style.css"),
+
+        new CopyWebpackPlugin([
+            {
+                from: {
+                    glob: "pages/**/*",
+                    dot: true
+                },
+                to: "."
+            }
+        ])
+    ],
+    devServer: {
+        contntBase: "./dist",
+    }
 }
